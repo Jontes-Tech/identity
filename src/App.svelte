@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { get } from "svelte/store";
   import { user } from "./stores";
   const greetings = ["Hello", "Hi", "Hey", "Howdy", "Greetings"];
   let showModal: "login" | "signup" | "" = "";
@@ -9,7 +8,7 @@
   async function ok() {
     const url = new URL(redirectURI);
     const fetched = await fetch(
-      "http://192.168.50.2:3001/token?audience=" + encodeURIComponent(new URL(redirectURI).origin),
+      "https://api.jontes.page/token?audience=" + encodeURIComponent(new URL(redirectURI).origin),
       {
         headers: {
           Authorization: localStorage.getItem("supersecrettoken") || "",
@@ -31,6 +30,22 @@
     authorized = true;
     // Redirect to redirect URI, but add the token as a query parameter. Use new URI, because the redirect URI might have a query string already.
     ok();
+  }
+
+  const thatToken = localStorage.getItem("supersecrettoken");
+  if (thatToken) {
+    // Check if the token is valid.
+    const payload = JSON.parse(
+      atob(thatToken.split(".")[1].replace("-", "+").replace("_", "/"))
+    );
+    if (payload.exp < Date.now() / 1000) {
+      user.set({
+        firstName: "",
+        lastName: "",
+        email: "",
+      })
+      localStorage.removeItem("supersecrettoken");
+    }
   }
 
   window.addEventListener("keydown", (e) => {
@@ -95,7 +110,7 @@
           new FormData(document.querySelector("form"))
         );
         if (showModal === "signup") {
-          const fetched = await fetch("http://192.168.50.2:3001/users", {
+          const fetched = await fetch("https://api.jontes.page/users", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -120,12 +135,16 @@
           }
         } else {
           const fetched = await fetch(
-            "http://192.168.50.2:3001/identityToken?email=" +
-              encodeURIComponent(data.email + "") +
-              "&password=" +
-              encodeURIComponent(data.password + ""),
+            "https://api.jontes.page/identityToken",
             {
-              method: "GET",
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                email: data.email,
+                password: data.password,
+              }),
             }
           );
           if (fetched.status === 200) {
