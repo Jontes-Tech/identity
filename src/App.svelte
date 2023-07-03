@@ -9,7 +9,7 @@
     const url = new URL(redirectURI);
     const fetched = await fetch(
       "https://api.jontes.page/token?audience=" +
-        encodeURIComponent(new URL(redirectURI).origin),
+        encodeURIComponent(redirectURI),
       {
         headers: {
           Authorization: localStorage.getItem("supersecrettoken") || "",
