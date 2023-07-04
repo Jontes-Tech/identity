@@ -11,6 +11,16 @@ export const user = writable<User>({
   email: "",
 });
 
+export const authorizedApps = writable<string[]>(
+  localStorage.getItem("authorizedApps")
+    ? localStorage.getItem("authorizedApps").split(",")
+    : []
+);
+
+authorizedApps.subscribe((value) => {
+  localStorage.setItem("authorizedApps", value.join(","));
+});
+
 if (localStorage.getItem("supersecrettoken")) {
   const token = localStorage.getItem("supersecrettoken");
   const payload = JSON.parse(

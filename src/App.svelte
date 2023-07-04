@@ -55,6 +55,8 @@
     }
   });
 
+  import { authorizedApps } from "./stores";
+
   let jonteApps = ["jontes.page"];
 </script>
 
@@ -63,29 +65,57 @@
     <h1 class="text-4xl font-bold mb-4">
       Welcome to <span class="rounded p-2 bg-violet-500">NT3 Identity</span>
     </h1>
-    {#if $user.firstName !== ""}
+    {#if $user.email !== ""}
       <p>
         {greetings[Math.floor(Math.random() * greetings.length)]}
-        {$user.firstName}! Do you feel like having a look at your authorized
-        apps today?
+        {$user.firstName}! {#if $authorizedApps.length !== 0}Do you feel like
+          having a look at your authorized apps today?{:else}NT3 Identity all
+          ready to use.{/if}
       </p>
       <div class="flex flex-col">
-        <ul
-          class="h-16 w-full max-w-xl bg-neutral-800 rounded mt-2 inline-block"
-        >
-          <li class="h-12 m-2 w-12 bg-neutral-700 rounded inline-block" />
-        </ul>
-        <button
-          on:click={() => {
-            localStorage.removeItem("supersecrettoken");
-            user.set({
-              firstName: "",
-              lastName: "",
-              email: "",
-            });
-          }}
-          class="text-left">Log out</button
-        >
+        {#if $authorizedApps.length !== 0}
+          <ul
+            class="h-16 w-full max-w-xl bg-neutral-800 rounded mt-2 inline-block"
+          >
+            {#each $authorizedApps as app}
+              <!-- svelte-ignore a11y-click-events-have-key-events -->
+              <li
+                title="Click to unauthorize app"
+                on:click={() => {
+                  if (
+                    confirm("Are you sure you want to unauthorize this app?")
+                  ) {
+                    const newApps = $authorizedApps.filter((a) => a !== app);
+                    authorizedApps.set(newApps);
+                  }
+                }}
+                class="h-12 m-2 w-12 bg-neutral-700 rounded inline-block"
+              >
+                <img
+                  src={`https://www.google.com/s2/favicons?domain=${
+                    new URL(app).host
+                  }&sz=128`}
+                  alt={new URL(app).host}
+                  class="overflow-hidden object-fill"
+                />
+              </li>
+            {/each}
+          </ul>
+        {/if}
+        <div>
+          <button
+            on:click={() => {
+              localStorage.removeItem("supersecrettoken");
+              user.set({
+                firstName: "",
+                lastName: "",
+                email: "",
+              });
+            }}
+            class="text-left hover:underline"
+            >Log out</button
+          >
+        </div>
       </div>
     {:else}
       <p>Log in to all of the Jonte ecosystem with one simple account.</p>
