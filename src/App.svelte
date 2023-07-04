@@ -83,7 +83,7 @@
                 title="Click to unauthorize app"
                 on:click={() => {
                   if (
-                    confirm("Are you sure you want to unauthorize this app?")
+                    confirm("Are you sure you want to unauthorize "+new URL(app).host+"?")
                   ) {
                     const newApps = $authorizedApps.filter((a) => a !== app);
                     authorizedApps.set(newApps);
