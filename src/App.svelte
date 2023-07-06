@@ -75,47 +75,44 @@
       <div class="flex flex-col">
         {#if $authorizedApps.length !== 0}
           <ul
-            class="h-16 w-full max-w-xl bg-neutral-800 rounded mt-2 inline-block"
+            class="h-16 w-full max-w-xl bg-neutral-800 rounded mt-2 inline-flex flex-row"
           >
             {#each $authorizedApps as app}
               <!-- svelte-ignore a11y-click-events-have-key-events -->
-              <li
-                title="Click to unauthorize app"
+              <img
                 on:click={() => {
                   if (
-                    confirm("Are you sure you want to unauthorize "+new URL(app).host+"?")
+                    confirm(
+                      "Are you sure you want to unauthorize " +
+                        new URL(app).host +
+                        "?"
+                    )
                   ) {
                     const newApps = $authorizedApps.filter((a) => a !== app);
                     authorizedApps.set(newApps);
                   }
                 }}
-                class="h-12 m-2 w-12 bg-neutral-700 rounded inline-block"
-              >
-                <img
-                  src={`https://www.google.com/s2/favicons?domain=${
-                    new URL(app).host
-                  }&sz=128`}
-                  alt={new URL(app).host}
-                  class="overflow-hidden object-fill"
-                />
-              </li>
+                src={`https://www.google.com/s2/favicons?domain=${
+                  new URL(app).host
+                }&sz=128`}
+                alt={new URL(app).host}
+                title="Click to unauthorize this app"
+                class="overflow-hidden object-fill h-12 w-12 rounded bg-neutral-600 m-2"
+              />
             {/each}
           </ul>
         {/if}
-        <div>
-          <button
-            on:click={() => {
-              localStorage.removeItem("supersecrettoken");
-              user.set({
-                firstName: "",
-                lastName: "",
-                email: "",
-              });
-            }}
-            class="text-left hover:underline"
-            >Log out</button
-          >
-        </div>
+        <button
+          on:click={() => {
+            localStorage.removeItem("supersecrettoken");
+            user.set({
+              firstName: "",
+              lastName: "",
+              email: "",
+            });
+          }}
+          class="text-left hover:underline">Log out</button
+        >
       </div>
     {:else}
       <p>Log in to all of the Jonte ecosystem with one simple account.</p>
