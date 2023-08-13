@@ -29,38 +29,46 @@
       token.set(localStorage.getItem("token"));
       console.log("Token set from local storage");
     }
-    let redirect = urlParams.get("redirect");
-    if (!redirect) {
-        redirect = localStorage.getItem("redirect");
+    let redirect = "";
+    // The user may or may not be signed in. We don't know if they want to go to a page
+    if (urlParams.has("redirect")) {
+      // In this case we know the user, in this session, wants to go to a page.
+      redirect = urlParams.get("redirect");
+      urlParams.delete("redirect");
+      window.history.replaceState({}, "", `${window.location.pathname}`);
+    } else if (localStorage.getItem("redirect")) {
+      // In this case we know the user, in a previous session, wanted to go to a page.
+      redirect = localStorage.getItem("redirect");
     }
+
     if (redirect) {
       if (!get(token)) {
         localStorage.setItem("redirect", redirect);
-      } else {
-        if (
-          localStorage
-            .getItem("authorized_apps")
-            ?.split(",")
-            .includes(new URL(redirect).origin)
-        ) {
-          // Add the token to the redirect URL
-          const redirectURL = new URL(redirect);
-          (async () => {
-            console.log(get(token));
-            const res = await fetch(
-              "https://api.jontes.page/token?audience=" + redirectURL.origin,
-              {
-                headers: {
-                  Authorization: get(token),
-                },
-              }
-            );
-            const gottoken = await res.text();
-            redirectURL.searchParams.append("token", gottoken);
-            localStorage.removeItem("redirect");
-            window.location.href = redirectURL.href;
-          })();
-        }
+        // We save the redirect URL in case the user logs in in the future
+        return;
+      }
+      if (
+        localStorage
+          .getItem("authorized_apps")
+          ?.split(",")
+          .includes(new URL(redirect).origin)
+      ) {
+        // Add the token to the redirect URL
+        const redirectURL = new URL(redirect);
+        (async () => {
+          console.log(get(token));
+          const res = await fetch(
+            "http://localhost:3001/token?audience=" + redirectURL.origin,
+            {
+              headers: {
+                Authorization: get(token),
+              },
+            }
+          );
+          const gottoken = await res.text();
+          redirectURL.searchParams.append("token", gottoken);
+          window.location.href = redirectURL.href;
+        })();
       }
     }
     token.subscribe((string) => {
@@ -159,7 +167,7 @@
       // @ts-ignore
       const email = document.getElementById("magic-email").value;
       const response = await fetch(
-        "https://api.jontes.page/getMagic/" +
+        "http://localhost:3001/getMagic/" +
           email +
           (new URLSearchParams(window.location.search).has("redirect")
             ? "?redirect=" +
@@ -200,7 +208,7 @@
       // @ts-ignore
       const displayName = document.getElementById("signup-displayname").value;
 
-      const response = await fetch("https://api.jontes.page/signup", {
+      const response = await fetch("http://localhost:3001/signup", {
         method: "POST",
         body: JSON.stringify({
           email: email,
