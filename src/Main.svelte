@@ -67,6 +67,7 @@
           );
           const gottoken = await res.text();
           redirectURL.searchParams.append("token", gottoken);
+          localStorage.removeItem("redirect");
           window.location.href = redirectURL.href;
         })();
       }
