@@ -55,7 +55,7 @@
         (async () => {
           console.log(get(token));
           const res = await fetch(
-            "http://localhost:3001/token?audience=" + redirectURL.origin,
+            "https://api.jontes.page/token?audience=" + redirectURL.origin,
             {
               headers: {
                 Authorization: get(token),
@@ -165,7 +165,7 @@
       // @ts-ignore
       const email = document.getElementById("magic-email").value;
       const response = await fetch(
-        "http://localhost:3001/getMagic/" +
+        "https://api.jontes.page/getMagic/" +
           email +
           (new URLSearchParams(window.location.search).has("redirect")
             ? "?redirect=" +
@@ -206,7 +206,7 @@
       // @ts-ignore
       const displayName = document.getElementById("signup-displayname").value;
 
-      const response = await fetch("http://localhost:3001/signup", {
+      const response = await fetch("https://api.jontes.page/signup", {
         method: "POST",
         body: JSON.stringify({
           email: email,
