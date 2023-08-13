@@ -6,35 +6,7 @@
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has("token")) {
       token.set(urlParams.get("token"));
-      if (localStorage.getItem("redirect")) {
-        const redirect = localStorage.getItem("redirect");
-        if (
-          localStorage
-            .getItem("authorized_apps")
-            ?.split(",")
-            .includes(new URL(redirect).origin)
-        ) {
-          // Add the token to the redirect URL
-          (async () => {
-            const redirectURL = new URL(redirect);
-            console.log(get(token));
-            const res = await fetch(
-              "http://localhost:3001/token?audience=" + redirectURL.origin,
-              {
-                headers: {
-                  Authorization: get(token),
-                },
-              }
-            );
-            const gottoken = await res.text();
-            redirectURL.searchParams.append("token", gottoken);
-            localStorage.removeItem("redirect");
-            window.location.href = redirectURL.href;
-          })();
-        }
-      }
       urlParams.delete("token");
-      window.history.replaceState({}, "", `${window.location.pathname}`);
       console.log("Token set from URL");
     }
     if (localStorage.getItem("token")) {
@@ -67,11 +39,7 @@
     }
 
     if (redirect) {
-      if (
-        !get(token) &&
-        !localStorage.getItem("token") &&
-        !urlParams.has("token")
-      ) {
+      if (!get(token)) {
         localStorage.setItem("redirect", redirect);
         // We save the redirect URL in case the user logs in in the future
         return;
@@ -83,8 +51,8 @@
           .includes(new URL(redirect).origin)
       ) {
         // Add the token to the redirect URL
+        const redirectURL = new URL(redirect);
         (async () => {
-          const redirectURL = new URL(redirect);
           console.log(get(token));
           const res = await fetch(
             "http://localhost:3001/token?audience=" + redirectURL.origin,
