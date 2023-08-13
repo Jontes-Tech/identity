@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { token, user } from "./stores";
+  import { get } from "svelte/store";
   onMount(() => {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has("token")) {
@@ -10,8 +11,54 @@
       console.log("Token set from URL");
     }
     if (localStorage.getItem("token")) {
+      const localToken = localStorage.getItem("token");
+      const payload = JSON.parse(
+        atob(localToken.split(".")[1].replace(/_/g, "/").replace(/-/g, "+"))
+      );
+      if (payload.exp < Date.now() / 1000) {
+        localStorage.removeItem("token");
+        token.set("");
+        user.set({
+          firstName: "",
+          lastName: "",
+          email: "",
+          authorizedApps: [],
+        });
+        return;
+      }
       token.set(localStorage.getItem("token"));
       console.log("Token set from local storage");
+    }
+    const redirect = urlParams.get("redirect") || localStorage.getItem("redirect");
+    if (redirect) {
+      if (!get(token)) {
+        localStorage.setItem("redirect", redirect);
+      } else {
+        if (
+          localStorage
+            .getItem("authorized_apps")
+            ?.split(",")
+            .includes(new URL(redirect).origin)
+        ) {
+          // Add the token to the redirect URL
+          const redirectURL = new URL(redirect);
+          (async () => {
+            console.log(get(token));
+            const res = await fetch(
+              "https://api.jontes.page/token?audience=" + redirectURL.origin,
+              {
+                headers: {
+                  Authorization: get(token),
+                },
+              }
+            );
+            const gottoken = await res.text();
+            redirectURL.searchParams.append("token", gottoken);
+            localStorage.removeItem("redirect");
+            window.location.href = redirectURL.href;
+          })();
+        }
+      }
     }
     token.subscribe((string) => {
       if (string) {
@@ -108,7 +155,14 @@
     on:submit|preventDefault={async () => {
       // @ts-ignore
       const email = document.getElementById("magic-email").value;
-      const response = await fetch("http://localhost:3001/getMagic/" + email);
+      const response = await fetch(
+        "https://api.jontes.page/getMagic/" +
+          email +
+          (new URLSearchParams(window.location.search).has("redirect")
+            ? "?redirect=" +
+              new URLSearchParams(window.location.search).get("redirect")
+            : "")
+      );
       if (response.status === 200) {
         const dialog = document.getElementById("magic");
         // @ts-ignore
@@ -143,7 +197,7 @@
       // @ts-ignore
       const displayName = document.getElementById("signup-displayname").value;
 
-      const response = await fetch("http://localhost:3001/signup", {
+      const response = await fetch("https://api.jontes.page/signup", {
         method: "POST",
         body: JSON.stringify({
           email: email,
