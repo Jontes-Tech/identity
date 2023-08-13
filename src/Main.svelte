@@ -5,33 +5,6 @@
   onMount(() => {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has("token")) {
-      const redirect = localStorage.getItem("redirect") || "";
-      if (redirect) {
-        if (
-          localStorage
-            .getItem("authorized_apps")
-            ?.split(",")
-            .includes(new URL(redirect).origin)
-        ) {
-          // Add the token to the redirect URL
-          const redirectURL = new URL(redirect);
-          (async () => {
-            console.log(get(token));
-            const res = await fetch(
-              "https://api.jontes.page/token?audience=" + redirectURL.origin,
-              {
-                headers: {
-                  Authorization: get(token),
-                },
-              }
-            );
-            const gottoken = await res.text();
-            redirectURL.searchParams.append("token", gottoken);
-            localStorage.removeItem("redirect");
-            window.location.href = redirectURL.href;
-          })();
-        }
-      }
       token.set(urlParams.get("token"));
       urlParams.delete("token");
       console.log("Token set from URL");
@@ -59,10 +32,8 @@
     // The user may or may not be signed in. We don't know if they want to go to a page
     if (urlParams.has("redirect")) {
       // In this case we know the user, in this session, wants to go to a page.
-      console.log("Got redirect from URL");
       redirect = urlParams.get("redirect");
     } else if (localStorage.getItem("redirect")) {
-      console.log("Got redirect from local storage");
       // In this case we know the user, in a previous session, wanted to go to a page.
       redirect = localStorage.getItem("redirect");
     }
@@ -98,6 +69,30 @@
           localStorage.removeItem("redirect");
           window.location.href = redirectURL.href;
         })();
+      } else {
+        const prompt = confirm(
+          `Welcome to NT3 Identity! Would you like ${
+            new URL(redirect).origin
+          } to access your NT3 account?`
+        );
+        if (prompt) {
+          const redirectURL = new URL(redirect);
+          (async () => {
+            console.log(get(token));
+            const res = await fetch(
+              "https://api.jontes.page/token?audience=" + redirectURL.origin,
+              {
+                headers: {
+                  Authorization: get(token),
+                },
+              }
+            );
+            const gottoken = await res.text();
+            redirectURL.searchParams.append("token", gottoken);
+            localStorage.removeItem("redirect");
+            window.location.href = redirectURL.href;
+          })();
+        }
       }
     }
     token.subscribe((string) => {
