@@ -29,8 +29,11 @@
       token.set(localStorage.getItem("token"));
       console.log("Token set from local storage");
     }
-    const redirect = urlParams.get("redirect");
-    if (redirect || localStorage.getItem("redirect")) {
+    let redirect = urlParams.get("redirect");
+    if (!redirect) {
+        redirect = localStorage.getItem("redirect");
+    }
+    if (redirect) {
       if (!get(token)) {
         localStorage.setItem("redirect", redirect);
       } else {
@@ -38,14 +41,10 @@
           localStorage
             .getItem("authorized_apps")
             ?.split(",")
-            .includes(
-              new URL(redirect || localStorage.getItem("redirect")).origin
-            )
+            .includes(new URL(redirect).origin)
         ) {
           // Add the token to the redirect URL
-          const redirectURL = new URL(
-            redirect || localStorage.getItem("redirect")
-          );
+          const redirectURL = new URL(redirect);
           (async () => {
             console.log(get(token));
             const res = await fetch(
