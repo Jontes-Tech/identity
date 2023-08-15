@@ -236,8 +236,8 @@
         method: "POST",
         body: JSON.stringify({
           email: email,
-          firstName: firstName,
-          lastName: lastName,
+          firstName: "",
+          lastName: "",
           displayName: displayName,
         }),
         headers: {
@@ -258,18 +258,6 @@
       type="text"
       placeholder="Unshared email"
       id="signup-email"
-      class="rounded px-5 py-3 min-w-max overflow-hidden shadow relative bg-neutral-700"
-    />
-    <input
-      type="text"
-      placeholder="Optional, unshared first name"
-      id="signup-firstname"
-      class="rounded px-5 py-3 min-w-max overflow-hidden shadow relative bg-neutral-700"
-    />
-    <input
-      type="text"
-      placeholder="Optional, unshared last name"
-      id="signup-lastname"
       class="rounded px-5 py-3 min-w-max overflow-hidden shadow relative bg-neutral-700"
     />
     <input
