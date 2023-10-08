@@ -3,13 +3,15 @@ interface User {
   firstName: string;
   lastName: string;
   email: string;
-  authorizedApps: string[];
+  displayName: string;
+  hue: number;
 }
 export const user = writable<User>({
   firstName: "",
   lastName: "",
   email: "",
-  authorizedApps: [],
+  displayName: "",
+  hue: 0,
 });
 
 export const token = writable<string>("");
